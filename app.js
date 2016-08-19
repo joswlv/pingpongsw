@@ -6,9 +6,9 @@ var path    = require('path');
 
 app.use(express.static(path.join(__dirname,"public")));
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8080;
 http.listen(port, function(){
-    console.log("server on!: http://localhost:3000/");
+    console.log("server on!: http://localhost:8080/");
 });
 
 var SETTINGS = require("./gameObjects/SETTINGS.js");
