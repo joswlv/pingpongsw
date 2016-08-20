@@ -1,6 +1,3 @@
-/**
- * Created by Jo_seungwan on 2016. 8. 19..
- */
 var SETTINGS = require("./SETTINGS.js");
 var BaseObejct = require("./BaseObject.js");
 
@@ -19,26 +16,22 @@ function Player(id,position){
     this.status.y = (SETTINGS.HEIGHT-this.status.height)/2;
     switch(position){
         case "LEFT":
-            this.status.x = SETTINGS.BORDER_WIDTH;
+            this.status.x = SETTINGS.PLAYER.GAP;
             break;
         case "RIGHT":
-            this.status.x = SETTINGS.WIDTH-SETTINGS.BORDER_WIDTH -this.status.width;
+            this.status.x = SETTINGS.WIDTH-SETTINGS.PLAYER.GAP -this.status.width;
             break;
     }
     this.status.color = color;
     this.id = id;
-    this.keypress = [];
+    this.keypress = {};
 }
 Player.prototype = new BaseObejct();
 Player.prototype.constructor = Player;
-Player.prototype.update = function(){
-    if(this.keypress[LEFT] && this.status.x - UNIT >= 0)
-        this.status.x -= UNIT;
-    if(this.keypress[UP] && this.status.y - UNIT >= 0)
+Player.prototype.update = function(objects){
+    if(this.keypress[UP] && this.status.y - UNIT >= 0 + SETTINGS.BORDER_WIDTH)
         this.status.y -= UNIT;
-    if(this.keypress[RIGHT] && this.status.x + this.status.width + UNIT <= SETTINGS.WIDTH)
-        this.status.x += UNIT;
-    if(this.keypress[DOWN] && this.status.y + this.status.height + UNIT <= SETTINGS.HEIGHT)
+    if(this.keypress[DOWN] && this.status.y + this.status.height + UNIT <= SETTINGS.HEIGHT - SETTINGS.BORDER_WIDTH)
         this.status.y += UNIT;
 };
 

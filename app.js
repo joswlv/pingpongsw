@@ -11,10 +11,11 @@ http.listen(port, function(){
     console.log("server on!: http://localhost:8080/");
 });
 
-var SETTINGS = require("./gameObjects/SETTINGS.js");
+var SETTINGS = require("./PingPong/SETTINGS.js");
 
-var lobbyManager = new (require('./gameObjects/LobbyManager.js'))(io);
-var roomManager = new (require('./gameObjects/RoomManager.js'))(io);
+var lobbyManager = new (require('./PingPong/LobbyManager.js'))(io);
+var roomManager = new (require('./PingPong/RoomManager.js'))(io);
+var gameManager = new (require('./PingPong/GameManager.js'))(io, roomManager);
 
 io.on('connection', function(socket){
     console.log('user connected: ', socket.id);
@@ -31,12 +32,12 @@ io.on('connection', function(socket){
         lobbyManager.kick(socket);
         lobbyManager.dispatch(roomManager);
         console.log('user disconnected: ', socket.id);
-        //console.log(socket);
     });
     socket.on('keydown', function(keyCode){
         var roomIndex = roomManager.roomIndex[socket.id];
-        if(roomIndex)
+        if(roomIndex){
             roomManager.rooms[roomIndex].objects[socket.id].keypress[keyCode] = true;
+        }
     });
     socket.on('keyup', function(keyCode){
         var roomIndex = roomManager.roomIndex[socket.id];
