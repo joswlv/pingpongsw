@@ -24,6 +24,7 @@ function Player(id,position){
     }
     this.status.color = color;
     this.id = id;
+    this.score = 0;
     this.keypress = {};
 }
 Player.prototype = new BaseObejct();

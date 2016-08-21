@@ -17,6 +17,11 @@ var SETTINGS = {
     },
     NET : {
         WIDTH : 6
+    },
+    SCORE : {
+        Y : 50,
+        SIZE : 50,
+        GAP : 50
     }
 };
 

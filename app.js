@@ -6,9 +6,9 @@ var path    = require('path');
 
 app.use(express.static(path.join(__dirname,"public")));
 
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 3000;
 http.listen(port, function(){
-    console.log("server on!: http://localhost:8080/");
+    console.log("server on!: http://localhost:3000/");
 });
 
 var SETTINGS = require("./PingPong/SETTINGS.js");
@@ -19,6 +19,8 @@ var gameManager = new (require('./PingPong/GameManager.js'))(io, roomManager);
 
 io.on('connection', function(socket){
     console.log('user connected: ', socket.id);
+//  console.log('$  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $  $\n', socket);
+
     lobbyManager.push(socket);
     lobbyManager.dispatch(roomManager);
 
@@ -32,6 +34,7 @@ io.on('connection', function(socket){
         lobbyManager.kick(socket);
         lobbyManager.dispatch(roomManager);
         console.log('user disconnected: ', socket.id);
+        //console.log(socket);
     });
     socket.on('keydown', function(keyCode){
         var roomIndex = roomManager.roomIndex[socket.id];
