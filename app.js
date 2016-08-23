@@ -6,9 +6,9 @@ var path    = require('path');
 
 app.use(express.static(path.join(__dirname,"public")));
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8080;
 http.listen(port, function(){
-    console.log("server on!: http://localhost:3000/");
+    console.log("server on!: http://localhost:8080");
 });
 
 var SETTINGS = require("./PingPong/SETTINGS.js");
@@ -27,15 +27,28 @@ io.on('connection', function(socket){
     });
     socket.on('disconnect', function(){
         var roomIndex = roomManager.roomIndex[socket.id];
-        if(roomIndex) roomManager.destroy(roomIndex, lobbyManager);
+        if(roomIndex) roomManager.destroy(roomIndex);
+        lobbyManager.kick(socket);
         console.log('user disconnected: ', socket.id);
     });
     socket.on('keydown', function(keyCode){
         var roomIndex = roomManager.roomIndex[socket.id];
         if(roomIndex) roomManager.rooms[roomIndex].objects[socket.id].keypress[keyCode] = true;
     });
+    socket.on('ready', function(){
+        var roomIndex = roomManager.roomIndex[socket.id];
+        if(roomIndex) roomManager.rooms[roomIndex].objects[socket.id].ready = true;
+    });
     socket.on('keyup', function(keyCode){
         var roomIndex = roomManager.roomIndex[socket.id];
         if(roomIndex) delete roomManager.rooms[roomIndex].objects[socket.id].keypress[keyCode];
+    });
+    socket.on('mousemove', function(x,y){
+        var roomIndex = roomManager.roomIndex[socket.id];
+        if(roomIndex) roomManager.rooms[roomIndex].objects[socket.id].mouse.move={x:x,y:y};
+    });
+    socket.on('click', function(x,y){
+        var roomIndex = roomManager.roomIndex[socket.id];
+        if(roomIndex) roomManager.rooms[roomIndex].objects[socket.id].mouse.click={x:x,y:y};
     });
 });
