@@ -1,6 +1,7 @@
 var Player = require("./objects/PlayerObject.js");
 var Ball = require("./objects/BallObject.js");
 var Score = require("./objects/ScoreObject.js");
+var Spark = require("./objects/SparkObject.js");
 var Countdown = require("./objects/CountdownObject.js");
 var SETTINGS = require("./SETTINGS.js");
 
@@ -25,7 +26,16 @@ function RoomManager(io){
     RmMg.destroy = function(roomId){
         var room = RmMg.rooms[roomId];
         room.players.forEach(function(socket){
-            var message = (!room.objects[socket.id].ready&&!room.objects.countdown)?"준비를 안해서 방에서 나가요~":null;
+            var message = (!room.objects[socket.id].ready&&!room.objects.countdown)?"YOU ARE NOT PREPARED":null;
+            delete RmMg.roomIndex[socket.id];
+            io.to(socket.id).emit('destroy',message);
+        });
+        delete RmMg.rooms[roomId];
+    };
+    RmMg.gameOver = function(roomId,winner){
+        var room = RmMg.rooms[roomId];
+        room.players.forEach(function(socket){
+            var message = (socket.id==winner)?"YOU WIN!":"YOU LOSE!";
             delete RmMg.roomIndex[socket.id];
             io.to(socket.id).emit('destroy',message);
         });
@@ -47,6 +57,7 @@ function Room(RmMg, id, socket0, socket1) {
     room.objects.player0Score = new Score(room.players[0].id, "LEFT");
     room.objects.player1Score = new Score(room.players[1].id, "RIGHT");
     room.objects.ball = new Ball(room.players[0].id, room.players[1].id);
+    room.effects = [];
 }
 
 var ready = {
@@ -67,12 +78,7 @@ var ready = {
             ready.destroy(room);
             playing.initialize(ready.io,room);
         }
-        var statuses = [];
-        for(var object in room.objects){
-            var obj = room.objects[object];
-            obj.update(room);
-            statuses.push(obj.status);
-        }
+        var statuses = getStatsFromObjects(room);
         ready.io.to(room.id).emit('update',statuses);
     },
     destroy : function(room){
@@ -92,12 +98,32 @@ var playing = {
         io.to(room.id).emit('playing');
     },
     loop : function(room){
-        var statuses = [];
-        for(var object in room.objects){
-            var obj = room.objects[object];
-            obj.update(room);
-            statuses.push(obj.status);
-        }
+        var statuses = getStatsFromObjects(room);
         playing.io.to(room.id).emit('update',statuses);
+        if(room.status == "playing" && (room.objects[room.players[0].id].score>=SETTINGS.GOAL ||room.objects[room.players[1].id].score>=SETTINGS.GOAL)){
+            room.status = "gameOver";
+            room.gameOverDelay = 3;
+        }
+        if(room.status == "gameOver" && room.gameOverDelay--<0){
+            if(room.objects[room.players[0].id].score>room.objects[room.players[1].id].score){
+                room.RmMg.gameOver(room.id,room.players[0].id);
+            } else {
+                room.RmMg.gameOver(room.id,room.players[1].id);
+            }
+        }
     }
 };
+
+function getStatsFromObjects(room){
+    var statuses = [];
+    for(var object in room.objects){
+        var obj = room.objects[object];
+        obj.update(room);
+        statuses.push(obj.status);
+    }
+    room.effects.forEach(function(effect){
+        effect.update(room);
+        statuses.push(effect.status);
+    });
+    return statuses;
+}
